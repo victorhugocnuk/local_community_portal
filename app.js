@@ -38,9 +38,19 @@ app.get('/', (req, res) => {
     res.render('index', { pageTitle: 'Welcome to Local Community Portal' });
 });
 
+// Contact page route
+app.get('/contact', (req, res) => {
+    res.render('contact', { pageTitle: 'Contact Us' });
+});
+
 // Start the server
 // Technical Explanation: `app.listen()` starts the Express server on the specified PORT.
 // The callback function is executed once the server successfully starts.
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+});
+
+// FAQ page route
+app.get('/faq', (req, res) => {
+    res.render('faq', { pageTitle: 'Frequently Asked Questions' });
 });
