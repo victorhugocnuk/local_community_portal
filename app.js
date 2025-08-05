@@ -98,6 +98,27 @@ app.delete('/news/:id', async (req, res) => {
     }
 });
 
+
+// Rota PUT for a news post by ID
+app.put('/news/:id', async (req, res) => {
+    try {
+        const { title, content } = req.body;
+        const updatedPost = await NewsPost.findByIdAndUpdate(
+            req.params.id,
+            { title, content },
+            { new: true } // return the updated document
+        ); // <-- This parenthesis was missing
+
+        if (!updatedPost) {
+            return res.status(404).json({ message: 'News post not found' });
+        }
+
+        res.json({ message: 'News post updated successfully', post: updatedPost });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating news post', error: error.message });
+    }
+});
+
 // Start the server
 // Technical Explanation: `app.listen()` starts the Express server on the specified PORT.
 // The callback function is executed once the server successfully starts.
