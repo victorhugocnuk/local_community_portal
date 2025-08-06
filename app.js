@@ -57,33 +57,38 @@ app.get('/contact', (req, res) => {
 // When a form submits data to this endpoint, the data (title, content)
 // will be available in `req.body`. We then create a new NewsPost instance
 // and save it to the database. Error handling is included.
+
+// Rota POST para criar um novo post de notícia
 app.post('/news', async (req, res) => {
     try {
-        const { title, content } = req.body; // Extract title and content from the request body
-        const newPost = new NewsPost({ title, content }); // Create a new NewsPost instance
-        await newPost.save(); // Save the new post to the database
-        res.status(201).send('News post created successfully!'); // Send a success response
-    } catch (err) {
-        console.error('Error creating news post:', err);
-        res.status(400).send('Error creating news post: ' + err.message); // Send an error response
+        const { title, content } = req.body;
+        const newPost = new NewsPost({ title, content });
+        await newPost.save();
+        res.redirect('/news'); // Redireciona o usuário para a página de notícias
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating news post', error: error.message });
     }
 });
 
+// Rota GET para exibir o formulário de criação de notícia
+app.get('/news/create', (req, res) => {
+    res.render('create', { pageTitle: 'Create New Post' });
+});
 
 // Adicione este código abaixo da sua rota POST /news
 
-// Rota GET para buscar todos os posts de notícia
+// Rota GET para renderizar a página de notícias
 app.get('/news', async (req, res) => {
     try {
         const newsPosts = await NewsPost.find();
-        res.json(newsPosts);
+        res.render('index', { 
+            newsPosts: newsPosts,
+            pageTitle: 'Community News' 
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching news posts', error: error.message });
     }
 });
-
-
-// Adicione este código abaixo das suas rotas GET e POST /news
 
 // Rota DELETE para excluir um post de notícia pelo ID
 app.delete('/news/:id', async (req, res) => {
@@ -132,3 +137,6 @@ app.get('/faq', (req, res) => {
 });
 
 const NewsPost = require('./models/NewsPost');
+
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
