@@ -90,6 +90,22 @@ app.get('/news', async (req, res) => {
     }
 });
 
+
+// Rota GET para exibir o formulário de edição de uma notícia
+app.get('/news/edit/:id', async (req, res) => {
+    try {
+        const post = await NewsPost.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ message: 'News post not found' });
+        }
+        res.render('edit', { post: post, pageTitle: 'Edit Post' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching news post', error: error.message });
+    }
+});
+
+
+
 // Rota DELETE para excluir um post de notícia pelo ID
 app.delete('/news/:id', async (req, res) => {
     try {
@@ -104,21 +120,21 @@ app.delete('/news/:id', async (req, res) => {
 });
 
 
-// Rota PUT for a news post by ID
+// Rota PUT para atualizar um post de notícia
 app.put('/news/:id', async (req, res) => {
     try {
         const { title, content } = req.body;
         const updatedPost = await NewsPost.findByIdAndUpdate(
             req.params.id,
             { title, content },
-            { new: true } // return the updated document
-        ); // <-- This parenthesis was missing
+            { new: true }
+        );
 
         if (!updatedPost) {
             return res.status(404).json({ message: 'News post not found' });
         }
 
-        res.json({ message: 'News post updated successfully', post: updatedPost });
+        res.redirect('/news'); // Redireciona o usuário para a página de notícias
     } catch (error) {
         res.status(500).json({ message: 'Error updating news post', error: error.message });
     }
