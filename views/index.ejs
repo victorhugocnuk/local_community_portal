@@ -1,5 +1,15 @@
 <%- include('partials/_header.ejs') %>
 
+<header>
+    <nav>
+        <a href="/"><h1>Community News Portal</h1></a>
+        <ul>
+            <li><a href="/news">News List</a></li>
+            <li><a href="/news/create">Create New Post</a></li>
+        </ul>
+    </nav>
+</header>
+
 <h1>Community News</h1>
 
 <div class="news-list">
@@ -7,10 +17,12 @@
         <div class="news-post">
             <h2><%= post.title %></h2>
             <p><%= post.content %></p>
-            <a href="/news/edit/<%= post._id %>">Edit</a>
-            <form action="/news/<%= post._id %>?_method=DELETE" method="POST" style="display: inline;">
-                <button type="submit">Delete</button>
-            </form>
+            <div class="actions">
+                <a href="/news/edit/<%= post._id %>" class="button-edit">Edit</a>
+                <form action="/news/<%= post._id %>?_method=DELETE" method="POST" style="display: inline;">
+                    <button type="submit" class="button-delete">Delete</button>
+                </form>
+            </div>
         </div>
     <% }); %>
 </div>

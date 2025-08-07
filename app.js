@@ -2,82 +2,53 @@
 
 const express = require('express');
 const path = require('path');
+const mongoose = require('mongoose');
+const methodOverride = require('method-override'); // Imports method-override middleware for PUT and DELETE
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Define the port, 5000 is default for the assessment
+const PORT = process.env.PORT || 5000;
 
+// Import the NewsPost model
+const NewsPost = require('./models/NewsPost');
 
-
-const mongoose = require('mongoose'); // Import of Mongoose
-
-
+// MongoDB Connection
 mongoose.connect('mongodb://localhost:27017/community_portal_db')
-    .then(() => console.log('Connected to MongoDB')) // Message displayed if the connection is successful
-    .catch(err => console.error('Could not connect to MongoDB:', err)); // Error message if the connection fails
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Could not connect to MongoDB:', err));
 
-// Set EJS as the view engine
-// Technical Explanation: This line configures Express to use EJS for rendering HTML templates.
+// Configure EJS as the view engine
 app.set('view engine', 'ejs');
-// Technical Explanation: This tells Express where to find your EJS template files.
-// `path.join(__dirname, 'views')` constructs an absolute path to the 'views' folder
-// located in the same directory as this `app.js` file.
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware to serve static files (CSS, JS, images, etc.) from the 'public' directory
-// Technical Explanation: `express.static()` is a built-in middleware function.
-// When a browser requests a file like '/css/style.css', Express will look for it
-// inside the 'public' folder.
+// Middlewares
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Middleware to parse JSON request bodies
-// Technical Explanation: `express.json()` parses incoming requests with JSON payloads.
-// This is essential for handling AJAX POST requests where data is sent as JSON.
 app.use(express.json());
-// Middleware to parse URL-encoded request bodies
-// Technical Explanation: `express.urlencoded({ extended: true })` parses incoming requests
-// with URL-encoded payloads, typically from HTML forms. `extended: true` allows for rich objects and arrays.
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method')); // IMPORTANT: Place this middleware here, after the body parsers!
 
-// Home page route - Renders the 'index.ejs' file
-// Technical Explanation: This defines a GET request handler for the root URL ('/').
-// When a user accesses http://localhost:5000/, this function will be executed.
-// `res.render('index', { pageTitle: '...' })` tells Express to render the 'index.ejs' template
-// and pass a `pageTitle` variable to it, which EJS can then use.
+// =======================
+// Navigation and Static Pages Routes
+// =======================
 app.get('/', (req, res) => {
-    res.render('index', { pageTitle: 'Welcome to Local Community Portal' });
+    res.render('index', { 
+        pageTitle: 'Welcome to Local Community Portal',
+        newsPosts: [] // Passa uma lista vazia de notícias para evitar erros na renderização do EJS
+    });
 });
 
-// Contact page route
 app.get('/contact', (req, res) => {
     res.render('contact', { pageTitle: 'Contact Us' });
 });
 
-// Route to handle adding new news posts
-// Technical Explanation: This defines a POST request handler for the '/news' URL.
-// When a form submits data to this endpoint, the data (title, content)
-// will be available in `req.body`. We then create a new NewsPost instance
-// and save it to the database. Error handling is included.
-
-// Rota POST para criar um novo post de notícia
-app.post('/news', async (req, res) => {
-    try {
-        const { title, content } = req.body;
-        const newPost = new NewsPost({ title, content });
-        await newPost.save();
-        res.redirect('/news'); // Redireciona o usuário para a página de notícias
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating news post', error: error.message });
-    }
+app.get('/faq', (req, res) => {
+    res.render('faq', { pageTitle: 'Frequently Asked Questions' });
 });
 
-// Rota GET para exibir o formulário de criação de notícia
-app.get('/news/create', (req, res) => {
-    res.render('create', { pageTitle: 'Create New Post' });
-});
+// =======================
+// CRUD Routes for News Posts
+// =======================
 
-// Adicione este código abaixo da sua rota POST /news
-
-// Rota GET para renderizar a página de notícias
+// GET route to display the list of news posts (READ)
 app.get('/news', async (req, res) => {
     try {
         const newsPosts = await NewsPost.find();
@@ -90,8 +61,12 @@ app.get('/news', async (req, res) => {
     }
 });
 
+// GET route to display the creation form (CREATE)
+app.get('/news/create', (req, res) => {
+    res.render('create', { pageTitle: 'Create New Post' });
+});
 
-// Rota GET para exibir o formulário de edição de uma notícia
+// GET route to display the edit form (UPDATE)
 app.get('/news/edit/:id', async (req, res) => {
     try {
         const post = await NewsPost.findById(req.params.id);
@@ -104,23 +79,19 @@ app.get('/news/edit/:id', async (req, res) => {
     }
 });
 
-
-
-// Rota DELETE para excluir um post de notícia pelo ID
-app.delete('/news/:id', async (req, res) => {
+// POST route to create a new news post (CREATE)
+app.post('/news', async (req, res) => {
     try {
-        const deletedPost = await NewsPost.findByIdAndDelete(req.params.id);
-        if (!deletedPost) {
-            return res.status(404).json({ message: 'News post not found' });
-        }
-        res.json({ message: 'News post deleted successfully' });
+        const { title, content } = req.body;
+        const newPost = new NewsPost({ title, content });
+        await newPost.save();
+        res.redirect('/news');
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting news post', error: error.message });
+        res.status(500).json({ message: 'Error creating news post', error: error.message });
     }
 });
 
-
-// Rota PUT para atualizar um post de notícia
+// PUT route to update a news post (UPDATE)
 app.put('/news/:id', async (req, res) => {
     try {
         const { title, content } = req.body;
@@ -129,30 +100,29 @@ app.put('/news/:id', async (req, res) => {
             { title, content },
             { new: true }
         );
-
         if (!updatedPost) {
             return res.status(404).json({ message: 'News post not found' });
         }
-
-        res.redirect('/news'); // Redireciona o usuário para a página de notícias
+        res.redirect('/news');
     } catch (error) {
         res.status(500).json({ message: 'Error updating news post', error: error.message });
     }
 });
 
+// DELETE route to delete a news post (DELETE)
+app.delete('/news/:id', async (req, res) => {
+    try {
+        const deletedPost = await NewsPost.findByIdAndDelete(req.params.id);
+        if (!deletedPost) {
+            return res.status(404).json({ message: 'News post not found' });
+        }
+        res.redirect('/news');
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting news post', error: error.message });
+    }
+});
+
 // Start the server
-// Technical Explanation: `app.listen()` starts the Express server on the specified PORT.
-// The callback function is executed once the server successfully starts.
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
-
-// FAQ page route
-app.get('/faq', (req, res) => {
-    res.render('faq', { pageTitle: 'Frequently Asked Questions' });
-});
-
-const NewsPost = require('./models/NewsPost');
-
-const methodOverride = require('method-override');
-app.use(methodOverride('_method'));
