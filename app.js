@@ -30,11 +30,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 
 // Rotas de Navegação e Páginas Estáticas
-app.get('/', (req, res) => {
-    res.render('index', { 
-        pageTitle: 'Welcome to Local Community Portal',
-        newsPosts: []
-    });
+app.get('/', async (req, res) => {
+    try {
+        const newsPosts = await NewsPost.find().sort({ createdAt: -1 }).limit(3);
+        res.render('home', { 
+            pageTitle: 'Welcome to Local Community Portal',
+            newsPosts: newsPosts
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching home page posts', error: error.message });
+    }
 });
 
 app.get('/contact', (req, res) => {

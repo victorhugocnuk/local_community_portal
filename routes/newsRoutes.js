@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const NewsPost = require('../models/NewsPost'); // Ajuste o caminho conforme a sua estrutura
 
-// Rota GET para exibir a lista de notícias (READ)
+// Rota GET para exibir a lista completa de notícias (READ)
 router.get('/', async (req, res) => {
     try {
-        const newsPosts = await NewsPost.find();
+        const newsPosts = await NewsPost.find().sort({ createdAt: -1 });
         res.render('index', { 
             newsPosts: newsPosts,
             pageTitle: 'Community News' 
@@ -28,6 +28,19 @@ router.get('/edit/:id', async (req, res) => {
             return res.status(404).json({ message: 'News post not found' });
         }
         res.render('edit', { post: post, pageTitle: 'Edit Post' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching news post', error: error.message });
+    }
+});
+
+// Rota GET para exibir um post individual
+router.get('/:id', async (req, res) => {
+    try {
+        const post = await NewsPost.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ message: 'News post not found' });
+        }
+        res.render('show', { post: post, pageTitle: post.title });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching news post', error: error.message });
     }
