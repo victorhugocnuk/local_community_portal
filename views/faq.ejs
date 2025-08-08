@@ -7,28 +7,20 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <%- include('partials/_header') %>
+    <%- include('partials/_header.ejs') %>
 
-    <main>
-        <h2>Frequently Asked Questions (FAQs)</h2>
-        <p>Here are some common questions about our Local Community Portal.</p>
+<div class="container">
+    <h1>Frequently Asked Questions</h1>
+    <h2>What is the purpose of this portal?</h2>
+    <p>This portal is a platform for local community news and announcements, designed to keep everyone informed about what's happening in the area.</p>
 
-        <div class="faq-item">
-            <h3>Q: What is the purpose of this portal?</h3>
-            <p>A: This portal aims to connect local community members, share news, events, and resources within our neighborhood.</p>
-        </div>
+    <h2>How can I post an event?</h2>
+    <p>Currently, event posting is managed by administrators. Please contact us via the Contact page if you have an event you'd like to share.</p>
 
-        <div class="faq-item">
-            <h3>Q: How can I post an event?</h3>
-            <p>A: Currently, event posting is managed by administrators. Please contact us via the Contact page if you have an event you'd like to share.</p>
-        </div>
+    <h2>Is there a cost to use the portal?</h2>
+    <p>No, the Local Community Portal is completely free to use for all community members.</p>
+</div>
 
-        <div class="faq-item">
-            <h3>Q: Is there a cost to use the portal?</h3>
-            <p>A: No, the Local Community Portal is completely free to use for all community members.</p>
-        </div>
-    </main>
-
-    <%- include('partials/_footer') %>
+<%- include('partials/_footer.ejs') %>
 </body>
 </html>
