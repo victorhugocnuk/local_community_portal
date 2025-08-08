@@ -1,0 +1,17 @@
+<%- include('partials/_header.ejs') %>
+
+<div class="search-results">
+    <h1>Search Results for "<%= query %>"</h1>
+    <% if (newsPosts.length > 0) { %>
+        <% newsPosts.forEach(function(post) { %>
+            <div class="news-post">
+                <a href="/news/<%= post._id %>"><h2><%= post.title %></h2></a>
+                <p><%= post.content.substring(0, 200) %>...</p>
+            </div>
+        <% }); %>
+    <% } else { %>
+        <p>No results found for your search query.</p>
+    <% } %>
+</div>
+
+<%- include('partials/_footer.ejs') %>

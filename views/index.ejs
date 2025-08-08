@@ -1,21 +1,29 @@
 <%- include('partials/_header.ejs') %>
 
-<h1>Community News</h1>
-
-<div class="news-post">
-    <a href="/news/<%= post._id %>"><h2><%= post.title %></h2></a>
-    <p><%= post.content %></p>
-    <div class="actions">
-        <a href="/news/edit/<%= post._id %>" class="button-edit">Edit</a>
-        <form action="/news/<%= post._id %>?_method=DELETE" method="POST" style="display: inline;">
-            <button type="submit" class="button-delete">Delete</button>
-        </form>
+<div class="container">
+    <h1>Community News</h1>
+    <div class="live-event">
+    <h2>Live Event: Local Fair</h2>
+    <p>Join us for the annual Local Fair on 15th August 2025! It will feature local vendors, live music, and fun for the whole family.</p>
+</div>
+    <div class="news-list">
+        <% if (newsPosts.length > 0) { %>
+            <% newsPosts.forEach(function(post) { %>
+                <div class="news-post">
+                    <a href="/news/<%= post._id %>"><h2><%= post.title %></h2></a>
+                    <p><%= post.content %></p>
+                    <div class="actions">
+                        <a href="/news/edit/<%= post._id %>" class="button-edit">Edit</a>
+                       <button class="button-delete" data-id="<%= post._id %>">Delete</button>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p>There are no news posts yet. Create a new one!</p>
+        <% } %>
     </div>
 </div>
-        <% }); %>
-    <% } else { %>
-        <p>There are no news posts yet. Create a new one!</p>
-    <% } %>
-</div>
+
+<script src="/js/delete.js"></script>
 
 <%- include('partials/_footer.ejs') %>

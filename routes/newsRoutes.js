@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const NewsPost = require('../models/NewsPost'); // Ajuste o caminho conforme a sua estrutura
+const NewsPost = require('../models/NewsPost');
 
 // Rota GET para exibir a lista completa de notícias (READ)
 router.get('/', async (req, res) => {
@@ -30,6 +30,27 @@ router.get('/edit/:id', async (req, res) => {
         res.render('edit', { post: post, pageTitle: 'Edit Post' });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching news post', error: error.message });
+    }
+});
+
+// Rota GET para pesquisa de posts
+router.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q;
+        const newsPosts = await NewsPost.find({
+            $or: [
+                { title: new RegExp(query, 'i') },
+                { content: new RegExp(query, 'i') }
+            ]
+        }).sort({ createdAt: -1 });
+
+        res.render('search', { 
+            newsPosts: newsPosts, 
+            query: query,
+            pageTitle: `Search Results for "${query}"`
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error searching news posts', error: error.message });
     }
 });
 
@@ -83,7 +104,7 @@ router.delete('/:id', async (req, res) => {
         if (!deletedPost) {
             return res.status(404).json({ message: 'News post not found' });
         }
-        res.redirect('/news');
+        res.json({ message: 'News post deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting news post', error: error.message });
     }
